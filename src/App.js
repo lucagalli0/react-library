@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { SketchPicker } from "react-color";
 import { Spring } from "react-spring";
-import onClickOutside from "react-onclickoutside";
+// import onClickOutside from "react-onclickoutside";
 import wood from "./wood.jpg";
 
 const top = ["top", "bottom"];
@@ -43,12 +43,12 @@ const Wrapper = styled.div`
 `;
 
 const Porta = styled.div`
-  border-top: 60px solid green;
-  border-left: 60px solid green;
-  border-right: 60px solid green;
+  border-top: 30px solid green;
+  border-left: 30px solid green;
+  border-right: 30px solid green;
   display: flex;
-  height: 2100px;
-  width: 810px;
+  height: calc(2100px / 2);
+  width: calc(810px / 2);
   flex-direction: column;
   background-color: #8d735b;
 `;
@@ -57,16 +57,16 @@ const Section = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: auto;
-  grid-gap: 20px;
+  grid-gap: 10px;
 `;
 
 const Sopra = styled(Section)`
-  height: 1130px;
-  margin-bottom: 20px;
+  height: calc(1130px / 2);
+  margin-bottom: 10px;
 `;
 
 const Sotto = styled(Section)`
-  height: 950px;
+  height: calc(950px / 2);
 `;
 
 const Riga = styled.div`
@@ -81,17 +81,23 @@ const Riga = styled.div`
   outline: ${props => (props.selected ? "18px solid blue" : "unset")};
 `;
 
+const initialState = {
+  rows: {
+    0: { top: true, r: 62, g: 154, b: 123, a: 0.5 },
+    1: { top: true, r: 128, g: 128, b: 128, a: 0.5 },
+    2: { top: true, r: 55, g: 89, b: 65, a: 0.5 },
+    3: { top: true, r: 201, g: 201, b: 201, a: 0.5 },
+    4: { top: true, r: 128, g: 128, b: 0, a: 0.5 },
+    5: { top: false, r: 62, g: 154, b: 123, a: 0.5 },
+    6: { top: false, r: 128, g: 128, b: 128, a: 0.5 },
+    7: { top: false, r: 55, g: 89, b: 65, a: 0.5 },
+    8: { top: false, r: 201, g: 201, b: 201, a: 0.5 }
+  }
+};
+
 class App extends Component {
   state = {
-    riga0: { r: 62, g: 154, b: 123, a: 0.5 },
-    riga1: { r: 128, g: 128, b: 128, a: 0.5 },
-    riga2: { r: 55, g: 89, b: 65, a: 0.5 },
-    riga3: { r: 201, g: 201, b: 201, a: 0.5 },
-    riga4: { r: 128, g: 128, b: 0, a: 0.5 },
-    riga5: { r: 62, g: 154, b: 123, a: 0.5 },
-    riga6: { r: 128, g: 128, b: 128, a: 0.5 },
-    riga7: { r: 55, g: 89, b: 65, a: 0.5 },
-    riga8: { r: 201, g: 201, b: 201, a: 0.5 },
+    ...initialState,
     selected: null,
     selectedColor: null,
     showPicker: false
@@ -99,7 +105,14 @@ class App extends Component {
 
   handleChangeComplete = color => {
     this.setState({
-      [this.state.selected]: color.rgb,
+      ...this.state,
+      rows: {
+        ...this.state.rows,
+        [this.state.selected]: {
+          top: this.state.rows[this.state.selected].top,
+          ...color.rgb
+        }
+      },
       selectedColor: color.rgb
     });
   };
@@ -109,7 +122,7 @@ class App extends Component {
     this.setState({
       showPicker: true,
       selected: id,
-      selectedColor: this.state[id]
+      selectedColor: this.state.rows[id]
     });
   };
 
@@ -117,88 +130,34 @@ class App extends Component {
 
   render() {
     const { selected, selectedColor } = this.state;
+    const sopra = Object.keys(this.state.rows).map(index => {
+      if (this.state.rows[index].top) {
+        return (
+          <Riga
+            id={index}
+            key={index}
+            color={this.state.rows[index]}
+            onClick={this.handleSelect}
+            selected={selected === index}
+            wood={woods[index]}
+          />
+        );
+      } else return null;
+    });
 
     return (
       <Container>
         <Wrapper>
           <h1>Libreria</h1>
-          {this.state.showPicker && (
-            <Picker
-              state={this.state}
-              selected={selected}
-              selectedColor={selectedColor}
-              handleChangeComplete={this.handleChangeComplete}
-              hidePicker={this.hidePicker}
-            />
-          )}
+          <Picker
+            rows={this.state.rows}
+            selected={selected}
+            selectedColor={selectedColor}
+            handleChangeComplete={this.handleChangeComplete}
+            hidePicker={this.hidePicker}
+          />
           <Porta>
-            <Sopra>
-              <Riga
-                id="riga0"
-                color={this.state.riga0}
-                onClick={this.handleSelect}
-                selected={selected === "riga0"}
-                wood={woods[0]}
-              />
-              <Riga
-                id="riga1"
-                color={this.state.riga1}
-                onClick={this.handleSelect}
-                selected={selected === "riga1"}
-                wood={woods[1]}
-              />
-              <Riga
-                id="riga2"
-                color={this.state.riga2}
-                onClick={this.handleSelect}
-                selected={selected === "riga2"}
-                wood={woods[2]}
-              />
-              <Riga
-                id="riga3"
-                color={this.state.riga3}
-                onClick={this.handleSelect}
-                selected={selected === "riga3"}
-                wood={woods[3]}
-              />
-              <Riga
-                id="riga4"
-                color={this.state.riga4}
-                onClick={this.handleSelect}
-                selected={selected === "riga4"}
-                wood={woods[4]}
-              />
-            </Sopra>
-            <Sotto>
-              <Riga
-                id="riga5"
-                color={this.state.riga5}
-                onClick={this.handleSelect}
-                selected={selected === "riga5"}
-                wood={woods[5]}
-              />
-              <Riga
-                id="riga6"
-                color={this.state.riga6}
-                onClick={this.handleSelect}
-                selected={selected === "riga6"}
-                wood={woods[6]}
-              />
-              <Riga
-                id="riga7"
-                color={this.state.riga7}
-                onClick={this.handleSelect}
-                selected={selected === "riga7"}
-                wood={woods[7]}
-              />
-              <Riga
-                id="riga8"
-                color={this.state.riga8}
-                onClick={this.handleSelect}
-                selected={selected === "riga8"}
-                wood={woods[8]}
-              />
-            </Sotto>
+            <Sopra>{sopra}</Sopra>
           </Porta>
         </Wrapper>
       </Container>
@@ -206,46 +165,37 @@ class App extends Component {
   }
 }
 
-const Picker = onClickOutside(
-  class extends Component {
-    handleClickOutside = () => this.props.hidePicker();
-
-    render() {
-      const {
-        handleChangeComplete,
-        selected,
-        selectedColor,
-        state
-      } = this.props;
-      return (
-        <Spring
-          to={
-            selected
-              ? {
-                  top: 240 * (Object.keys(state).indexOf(selected) + 1)
-                }
-              : { top: 10 }
-          }
-        >
-          {styles => (
-            <div
-              style={{
-                position: "absolute",
-                left: "100%",
-                top: styles.top
-              }}
-            >
-              <SketchPicker
-                color={selectedColor || "transparent"}
-                onChangeComplete={handleChangeComplete}
-                width={810}
-              />
-            </div>
-          )}
-        </Spring>
-      );
-    }
+const Picker = class extends Component {
+  render() {
+    const { handleChangeComplete, selected, selectedColor, rows } = this.props;
+    return (
+      <Spring
+        to={
+          selected
+            ? {
+                top: 240 * (Object.keys(rows).indexOf(selected) + 1)
+              }
+            : { top: 10 }
+        }
+      >
+        {styles => (
+          <div
+            style={{
+              position: "absolute",
+              left: "100%",
+              top: styles.top
+            }}
+          >
+            <SketchPicker
+              color={selectedColor || "transparent"}
+              onChangeComplete={handleChangeComplete}
+              width={810}
+            />
+          </div>
+        )}
+      </Spring>
+    );
   }
-);
+};
 
 export default App;
