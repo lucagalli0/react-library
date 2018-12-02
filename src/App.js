@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { SketchPicker } from "react-color";
 import { Spring } from "react-spring";
-// import onClickOutside from "react-onclickoutside";
 import wood from "./wood.jpg";
 
 const top = ["top", "bottom"];
@@ -33,8 +32,9 @@ const Container = styled.div`
 const Wrapper = styled.div`
   background: white;
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-gap: 20px;
   justify-content: center;
   align-items: center;
   width: 1000px;
@@ -78,21 +78,37 @@ const Riga = styled.div`
           props.color.b
         }, ${props.color.a})),url(${wood}) no-repeat ${props.wood}`
       : "white"};
-  outline: ${props => (props.selected ? "18px solid blue" : "unset")};
+  outline: ${props => (props.selected ? "10px solid blue" : "unset")};
+  transition: all 200 linear;
+`;
+
+const Options = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  justify-content: space-around;
+  align-items: center;
+`;
+
+const RowsNumber = styled.div`
+  height: 100px;
+  font-size: 50px;
+  text-align: center;
+  width: 200px;
 `;
 
 const initialState = {
-  rows: {
-    0: { top: true, r: 62, g: 154, b: 123, a: 0.5 },
-    1: { top: true, r: 128, g: 128, b: 128, a: 0.5 },
-    2: { top: true, r: 55, g: 89, b: 65, a: 0.5 },
-    3: { top: true, r: 201, g: 201, b: 201, a: 0.5 },
-    4: { top: true, r: 128, g: 128, b: 0, a: 0.5 },
-    5: { top: false, r: 62, g: 154, b: 123, a: 0.5 },
-    6: { top: false, r: 128, g: 128, b: 128, a: 0.5 },
-    7: { top: false, r: 55, g: 89, b: 65, a: 0.5 },
-    8: { top: false, r: 201, g: 201, b: 201, a: 0.5 }
-  }
+  rows: [
+    { top: true, r: 62, g: 154, b: 123, a: 0.5 },
+    { top: true, r: 128, g: 128, b: 128, a: 0.5 },
+    { top: true, r: 55, g: 89, b: 65, a: 0.5 },
+    { top: true, r: 201, g: 201, b: 201, a: 0.5 },
+    { top: true, r: 128, g: 128, b: 0, a: 0.5 },
+    { top: false, r: 62, g: 154, b: 123, a: 0.5 },
+    { top: false, r: 128, g: 128, b: 128, a: 0.5 },
+    { top: false, r: 55, g: 89, b: 65, a: 0.5 },
+    { top: false, r: 201, g: 201, b: 201, a: 0.5 }
+  ]
 };
 
 class App extends Component {
@@ -104,16 +120,15 @@ class App extends Component {
   };
 
   handleChangeComplete = color => {
-    this.setState({
-      ...this.state,
-      rows: {
-        ...this.state.rows,
-        [this.state.selected]: {
-          top: this.state.rows[this.state.selected].top,
-          ...color.rgb
-        }
-      },
-      selectedColor: color.rgb
+    this.setState(({ rows, selectedColor, selected }) => {
+      rows.map((r, i) => {
+        if (i === selected) {
+          return {
+            ...r,
+            ...color
+          };
+        } else return r;
+      });
     });
   };
 
@@ -145,10 +160,45 @@ class App extends Component {
       } else return null;
     });
 
+    const sotto = Object.keys(this.state.rows).map(index => {
+      if (!this.state.rows[index].top) {
+        return (
+          <Riga
+            id={index}
+            key={index}
+            color={this.state.rows[index]}
+            onClick={this.handleSelect}
+            selected={selected === index}
+            wood={woods[index]}
+          />
+        );
+      } else return null;
+    });
+
     return (
       <Container>
         <Wrapper>
-          <h1>Libreria</h1>
+          <Options>
+            <RowsNumber>
+              {`Sopra: ${this.state.rows.filter(r => r.top).length}`}
+
+              <br />
+              <button
+                onClick={() =>
+                  this.setState({ rows: [...this.state.rows, { top: true }] })
+                }
+              >
+                +
+              </button>
+              <button>-</button>
+            </RowsNumber>
+            <RowsNumber>
+              {`Sotto: ${this.state.rows.filter(r => !r.top).length}`}
+              <br />
+              <button>+</button>
+              <button>-</button>
+            </RowsNumber>
+          </Options>
           <Picker
             rows={this.state.rows}
             selected={selected}
@@ -158,6 +208,7 @@ class App extends Component {
           />
           <Porta>
             <Sopra>{sopra}</Sopra>
+            <Sotto>{sotto}</Sotto>
           </Porta>
         </Wrapper>
       </Container>
@@ -173,7 +224,7 @@ const Picker = class extends Component {
         to={
           selected
             ? {
-                top: 240 * (Object.keys(rows).indexOf(selected) + 1)
+                top: (600 * selected) / rows.length
               }
             : { top: 10 }
         }
@@ -182,14 +233,14 @@ const Picker = class extends Component {
           <div
             style={{
               position: "absolute",
-              left: "100%",
+              left: "80%",
               top: styles.top
             }}
           >
             <SketchPicker
               color={selectedColor || "transparent"}
               onChangeComplete={handleChangeComplete}
-              width={810}
+              width={400}
             />
           </div>
         )}
